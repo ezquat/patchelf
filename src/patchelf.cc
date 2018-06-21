@@ -165,6 +165,8 @@ private:
 
     std::string getSectionName(const Elf_Shdr & shdr);
 
+    void dumpSections();
+
     Elf_Shdr & findSection(const SectionName & sectionName);
 
     Elf_Shdr * findSection2(const SectionName & sectionName);
@@ -472,10 +474,16 @@ void ElfFile<ElfFileParamNames>::sortShdrs()
     /* Idem for the index of the .shstrtab section in the ELF header. */
     SectionName shstrtabName = getSectionName(shdrs[rdi(hdr->e_shstrndx)]);
 
+    debug("PRE SORT:\n");
+    dumpSections();
+
     /* Sort the sections by offset. */
     CompShdr comp;
     comp.elfFile = this;
     sort(shdrs.begin(), shdrs.end(), comp);
+
+    debug("POST SORT:\n");
+    dumpSections();
 
     /* Restore the sh_link mappings. */
     for (unsigned int i = 1; i < rdi(hdr->e_shnum); ++i)
@@ -570,6 +578,13 @@ std::string ElfFile<ElfFileParamNames>::getSectionName(const Elf_Shdr & shdr)
     return std::string(sectionNames.c_str() + rdi(shdr.sh_name));
 }
 
+
+template<ElfFileParams>
+void ElfFile<ElfFileParamNames>::dumpSections()
+{
+    for (unsigned int i = 1; i < rdi(hdr->e_shnum); ++i)
+        debug("%d: '%s'\n", i, getSectionName(shdrs[i]).c_str());
+}
 
 template<ElfFileParams>
 Elf_Shdr & ElfFile<ElfFileParamNames>::findSection(const SectionName & sectionName)
