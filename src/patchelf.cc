@@ -480,7 +480,7 @@ void ElfFile<ElfFileParamNames>::sortShdrs()
     /* Sort the sections by offset. */
     CompShdr comp;
     comp.elfFile = this;
-    sort(shdrs.begin(), shdrs.end(), comp);
+    sort(shdrs.begin() + 1, shdrs.end(), comp);
 
     debug("POST SORT:\n");
     dumpSections();
@@ -657,7 +657,8 @@ void ElfFile<ElfFileParamNames>::writeReplacedSections(Elf_Off & curOff,
     for (auto & i : replacedSections) {
         std::string sectionName = i.first;
         Elf_Shdr & shdr = findSection(sectionName);
-        memset(contents + rdi(shdr.sh_offset), 'X', rdi(shdr.sh_size));
+        if (shdr.sh_type != SHT_NOBITS)
+            memset(contents + rdi(shdr.sh_offset), 'X', rdi(shdr.sh_size));
     }
 
     for (auto & i : replacedSections) {
